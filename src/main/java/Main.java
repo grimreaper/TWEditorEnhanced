@@ -1,7 +1,5 @@
 package TWEditor;
 
-import sun.misc.OSEnvironment;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,24 +32,24 @@ public class Main
   public static String tmpDir;
   public static File propFile;
   public static Properties properties;
-  public static StringsDatabase stringsDatabase;
+  public static TWEditor.StringsDatabase stringsDatabase;
   public static int languageID;
   public static Map<String, Object> resourceFiles;
-  public static List<ItemTemplate> itemTemplates;
-  public static SaveDatabase saveDatabase;
+  public static List<TWEditor.ItemTemplate> itemTemplates;
+  public static TWEditor.SaveDatabase saveDatabase;
   public static File databaseFile;
-  public static Database database;
+  public static TWEditor.Database database;
   public static String savePrefix;
   public static String modName;
   public static File modFile;
-  public static ResourceDatabase modDatabase;
-  public static List<Quest> quests;
+  public static TWEditor.ResourceDatabase modDatabase;
+  public static List<TWEditor.Quest> quests;
   public static String playerName;
   public static File playerFile;
-  public static Database playerDatabase;
+  public static TWEditor.Database playerDatabase;
   public static String smmName;
   public static File smmFile;
-  public static Database smmDatabase;
+  public static TWEditor.Database smmDatabase;
   public static boolean dataModified = false;
 
   public static boolean dataChanging = false;
@@ -92,7 +90,7 @@ public class Main
       }
       if ((installPath == null) || (languageID == -1)) {
         if (osMac) {
-            installPath = "/Applications/The Witcher.app/Contents/Resources/drive_c/Program Files/The Witcher";
+            installPath = "/Applications/Witcher Enhanced Edition, The /Resources";
             languageID = 3;
         } else if (osLinux) {
             String locateString = "locate dialog_3.tlk | grep \"Witcher.*Data\" | sed -e \"s|/Data/dialog_3.tlk||\"";
@@ -110,7 +108,7 @@ public class Main
         } else if (osWin) {
             String regString = "reg query \"HKLM\\Software\\CD Projekt Red\\The Witcher\"";
             Process process = Runtime.getRuntime().exec(regString);
-            StreamReader streamReader = new StreamReader(process.getInputStream());
+            TWEditor.StreamReader streamReader = new TWEditor.StreamReader(process.getInputStream());
             streamReader.start();
             process.waitFor();
             streamReader.join();
@@ -162,13 +160,13 @@ public class Main
       if (!stringsFile.exists()) {
         throw new IOException(new StringBuilder().append("Localized strings database ").append(stringsFile.getPath()).append(" does not exist").toString());
       }
-      stringsDatabase = new StringsDatabase(stringsFile);
+      stringsDatabase = new TWEditor.StringsDatabase(stringsFile);
 
-      KeyDatabase keyDatabase = new KeyDatabase(new StringBuilder().append(installDataPath).append(fileSeparator).append("main.key").toString());
+      TWEditor.KeyDatabase keyDatabase = new TWEditor.KeyDatabase(new StringBuilder().append(installDataPath).append(fileSeparator).append("main.key").toString());
       List keyEntries = keyDatabase.getEntries();
       resourceFiles = new HashMap(keyEntries.size());
       for (Object keyEntryObj : keyEntries) {
-        KeyEntry keyEntry = (KeyEntry)keyEntryObj;
+        TWEditor.KeyEntry keyEntry = (TWEditor.KeyEntry)keyEntryObj;
         String name = keyEntry.getFileName().toLowerCase();
         int sep = name.lastIndexOf('.');
         if (sep > 0) {
@@ -240,7 +238,7 @@ public class Main
     {
       JFrame.setDefaultLookAndFeelDecorated(true);
 
-      mainWindow = new MainWindow();
+      mainWindow = new TWEditor.MainWindow();
       mainWindow.pack();
       mainWindow.setVisible(true);
 
@@ -256,8 +254,8 @@ public class Main
 
   public static void buildTemplates()
   {
-    ProgressDialog dialog = new ProgressDialog(mainWindow, "Loading item templates");
-    LoadTemplates task = new LoadTemplates(dialog);
+    TWEditor.ProgressDialog dialog = new TWEditor.ProgressDialog(mainWindow, "Loading item templates");
+    TWEditor.LoadTemplates task = new TWEditor.LoadTemplates(dialog);
     task.start();
     dialog.showDialog();
   }

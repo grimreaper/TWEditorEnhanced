@@ -50,12 +50,12 @@ public class InventoryPanel extends JPanel
   private DefaultListModel itemsModel;
   private JList itemsField;
   private DefaultMutableTreeNode rootNode;
-  private CategoryNode[] categoryNodes;
+  private TWEditor.CategoryNode[] categoryNodes;
   private DefaultTreeModel availModel;
   private JTree availField;
   private boolean availDone = false;
-  private List<AlchemyIngredient> ingredients;
-  private Map<Integer, AlchemyIngredient> ingredientsMap;
+  private List<TWEditor.AlchemyIngredient> ingredients;
+  private Map<Integer, TWEditor.AlchemyIngredient> ingredientsMap;
   private boolean[][] slots;
 
   public InventoryPanel()
@@ -64,9 +64,9 @@ public class InventoryPanel extends JPanel
 
     this.rootNode = new DefaultMutableTreeNode("Items");
 
-    this.categoryNodes = new CategoryNode[categories.length];
+    this.categoryNodes = new TWEditor.CategoryNode[categories.length];
     for (int i = 0; i < categories.length; i++) {
-      CategoryNode node = new CategoryNode(categories[i]);
+      TWEditor.CategoryNode node = new TWEditor.CategoryNode(categories[i]);
       this.categoryNodes[i] = node;
       this.rootNode.add(node);
     }
@@ -140,17 +140,17 @@ public class InventoryPanel extends JPanel
       else if (action.equals("remove current item"))
         removeSelectedItem();
     }
-    catch (DBException exc) {
-      Main.logException("Unable to process database field", exc);
+    catch (TWEditor.DBException exc) {
+      TWEditor.Main.logException("Unable to process database field", exc);
     } catch (IOException exc) {
-      Main.logException("An I/O error occurred", exc);
+      TWEditor.Main.logException("An I/O error occurred", exc);
     } catch (Throwable exc) {
-      Main.logException("Exception while processing action event", exc);
+      TWEditor.Main.logException("Exception while processing action event", exc);
     }
   }
 
   private void examineCurrentItem()
-    throws DBException, IOException
+    throws TWEditor.DBException, IOException
   {
     int sel = this.itemsField.getSelectedIndex();
     if (sel < 0) {
@@ -159,13 +159,13 @@ public class InventoryPanel extends JPanel
       return;
     }
 
-    InventoryItem item = (InventoryItem)this.itemsModel.getElementAt(sel);
+    TWEditor.InventoryItem item = (TWEditor.InventoryItem)this.itemsModel.getElementAt(sel);
 
-    examineItem(item.getName(), (DBList)item.getElement().getValue());
+    examineItem(item.getName(), (TWEditor.DBList)item.getElement().getValue());
   }
 
   private void examineAvailableItem()
-    throws DBException, IOException
+    throws TWEditor.DBException, IOException
   {
     int count = this.availField.getSelectionCount();
     if (count == 0) {
@@ -177,19 +177,19 @@ public class InventoryPanel extends JPanel
     TreePath treePath = this.availField.getSelectionPath();
     DefaultMutableTreeNode node = (DefaultMutableTreeNode)treePath.getLastPathComponent();
     Object userObject = node.getUserObject();
-    if (!(userObject instanceof ItemTemplate)) {
+    if (!(userObject instanceof TWEditor.ItemTemplate)) {
       JOptionPane.showMessageDialog(this, "You must select an item to examine", "No item selected", 0);
 
       return;
     }
 
-    ItemTemplate template = (ItemTemplate)userObject;
+    TWEditor.ItemTemplate template = (TWEditor.ItemTemplate)userObject;
 
     examineItem(template.getItemName(), template.getFieldList());
   }
 
-  private void examineItem(String label, DBList fieldList)
-    throws DBException, IOException
+  private void examineItem(String label, TWEditor.DBList fieldList)
+    throws TWEditor.DBException, IOException
   {
     StringBuilder description = new StringBuilder(256);
 
@@ -203,7 +203,7 @@ public class InventoryPanel extends JPanel
 
     int alchemyID = fieldList.getInteger("AlchIngredient");
     if (alchemyID > 0) {
-      AlchemyIngredient ingredient = (AlchemyIngredient)this.ingredientsMap.get(new Integer(alchemyID));
+      TWEditor.AlchemyIngredient ingredient = (TWEditor.AlchemyIngredient)this.ingredientsMap.get(new Integer(alchemyID));
       if (ingredient != null) {
         description.append("<br><ul>");
         List substances = ingredient.getSubstances();
@@ -217,11 +217,11 @@ public class InventoryPanel extends JPanel
 
     }
 
-    ExamineDialog.showDialog(Main.mainWindow, label, description.toString());
+    TWEditor.ExamineDialog.showDialog(TWEditor.Main.mainWindow, label, description.toString());
   }
 
   private void removeSelectedItem()
-    throws DBException
+    throws TWEditor.DBException
   {
     int sel = this.itemsField.getSelectedIndex();
     if (sel < 0) {
@@ -230,21 +230,21 @@ public class InventoryPanel extends JPanel
       return;
     }
 
-    InventoryItem item = (InventoryItem)this.itemsModel.getElementAt(sel);
-    DBElement itemElement = item.getElement();
+    TWEditor.InventoryItem item = (TWEditor.InventoryItem)this.itemsModel.getElementAt(sel);
+    TWEditor.DBElement itemElement = item.getElement();
 
     this.itemsModel.removeElementAt(sel);
     this.itemsField.setSelectedIndex(-1);
 
-    DBList list = (DBList)Main.database.getTopLevelStruct().getValue();
-    list = (DBList)list.getElement("Mod_PlayerList").getValue();
-    list = (DBList)list.getElement(0).getValue();
-    DBList itemList = (DBList)list.getElement("ItemList").getValue();
+    TWEditor.DBList list = (TWEditor.DBList) TWEditor.Main.database.getTopLevelStruct().getValue();
+    list = (TWEditor.DBList)list.getElement("Mod_PlayerList").getValue();
+    list = (TWEditor.DBList)list.getElement(0).getValue();
+    TWEditor.DBList itemList = (TWEditor.DBList)list.getElement("ItemList").getValue();
     int itemCount = itemList.getElementCount();
     for (int i = 0; i < itemCount; i++) {
       if (itemList.getElement(i) == itemElement) {
         itemList.removeElement(i);
-        DBList fieldList = (DBList)itemElement.getValue();
+        TWEditor.DBList fieldList = (TWEditor.DBList)itemElement.getValue();
         int x = fieldList.getInteger("Repos_PosX");
         int y = fieldList.getInteger("Repos_PosY");
         int questItem = fieldList.getInteger("QuestItem");
@@ -255,12 +255,12 @@ public class InventoryPanel extends JPanel
 
     }
 
-    Main.dataModified = true;
-    Main.mainWindow.setTitle(null);
+    TWEditor.Main.dataModified = true;
+    TWEditor.Main.mainWindow.setTitle(null);
   }
 
   private void addSelectedItem()
-    throws DBException, IOException
+    throws TWEditor.DBException, IOException
   {
     int count = this.availField.getSelectionCount();
     if (count == 0) {
@@ -272,14 +272,14 @@ public class InventoryPanel extends JPanel
     TreePath treePath = this.availField.getSelectionPath();
     DefaultMutableTreeNode node = (DefaultMutableTreeNode)treePath.getLastPathComponent();
     Object userObject = node.getUserObject();
-    if (!(userObject instanceof ItemTemplate)) {
+    if (!(userObject instanceof TWEditor.ItemTemplate)) {
       JOptionPane.showMessageDialog(this, "You must select an item to add", "No item selected", 0);
 
       return;
     }
 
-    ItemTemplate template = (ItemTemplate)userObject;
-    DBList templateList = template.getFieldList();
+    TWEditor.ItemTemplate template = (TWEditor.ItemTemplate)userObject;
+    TWEditor.DBList templateList = template.getFieldList();
     int questItem = templateList.getInteger("QuestItem");
     int alchemyIngredient = templateList.getInteger("AlchIngredient");
 
@@ -324,10 +324,10 @@ public class InventoryPanel extends JPanel
 
     int stackSize = Math.max(templateList.getInteger("MaxStack"), 1);
 
-    DBList fieldList = (DBList)templateList.clone();
+    TWEditor.DBList fieldList = (TWEditor.DBList)templateList.clone();
     fieldList.setInteger("Dropable", 1, 0);
     fieldList.setInteger("Identified", 1, 0);
-    fieldList.setInteger("StackSize", stackSize, 2);
+    fieldList.setInteger("StackSize", 1, 2);
     fieldList.setInteger("Repos_PosX", x, 2);
     fieldList.setInteger("Repos_PosY", y, 2);
 
@@ -335,52 +335,52 @@ public class InventoryPanel extends JPanel
       this.slots[y][x] = true;
     }
 
-    DBList list = (DBList)Main.database.getTopLevelStruct().getValue();
-    list = (DBList)list.getElement("Mod_PlayerList").getValue();
-    list = (DBList)list.getElement(0).getValue();
+    TWEditor.DBList list = (TWEditor.DBList) TWEditor.Main.database.getTopLevelStruct().getValue();
+    list = (TWEditor.DBList)list.getElement("Mod_PlayerList").getValue();
+    list = (TWEditor.DBList)list.getElement(0).getValue();
 
-    DBElement element = list.getElement("ItemList");
-    DBList itemList;
+    TWEditor.DBElement element = list.getElement("ItemList");
+    TWEditor.DBList itemList;
     if (element == null) {
-      itemList = new DBList(10);
-      element = new DBElement(15, 0, "ItemList", itemList);
+      itemList = new TWEditor.DBList(10);
+      element = new TWEditor.DBElement(15, 0, "ItemList", itemList);
       list.addElement(element);
     } else {
-      itemList = (DBList)element.getValue();
+      itemList = (TWEditor.DBList)element.getValue();
     }
 
-    element = new DBElement(14, 0, "", fieldList);
+    element = new TWEditor.DBElement(14, 0, "", fieldList);
     itemList.addElement(element);
 
-    InventoryItem item = new InventoryItem(template.getItemName(), element);
+    TWEditor.InventoryItem item = new TWEditor.InventoryItem(template.getItemName(), element);
     insertItem(this.itemsModel, item);
 
-    Main.dataModified = true;
-    Main.mainWindow.setTitle(null);
+    TWEditor.Main.dataModified = true;
+    TWEditor.Main.mainWindow.setTitle(null);
   }
 
-  public void setFields(DBList list)
-    throws DBException, IOException
+  public void setFields(TWEditor.DBList list)
+    throws TWEditor.DBException, IOException
   {
     int itemCount = 0;
-    DBList itemList = null;
+    TWEditor.DBList itemList = null;
 
     if (this.ingredients == null) {
-      Object resource = Main.resourceFiles.get("alchemy_ingre.2da");
+      Object resource = TWEditor.Main.resourceFiles.get("alchemy_ingre.2da");
       if (resource == null) {
         throw new IOException("alchemy_ingre.2da not found");
       }
       InputStream in = null;
       if ((resource instanceof File))
         in = new FileInputStream((File)resource);
-      else if ((resource instanceof KeyEntry)) {
-        in = ((KeyEntry)resource).getInputStream();
+      else if ((resource instanceof TWEditor.KeyEntry)) {
+        in = ((TWEditor.KeyEntry)resource).getInputStream();
       }
 
       if (in == null) {
         throw new IOException("alchemy_ingre.2da not found");
       }
-      TextDatabase textDatabase = new TextDatabase(in);
+      TWEditor.TextDatabase textDatabase = new TWEditor.TextDatabase(in);
       int count = textDatabase.getResourceCount();
       this.ingredients = new ArrayList(count);
       this.ingredientsMap = new HashMap(count);
@@ -393,7 +393,7 @@ public class InventoryPanel extends JPanel
               substances.add(substanceNames[j]);
             }
           }
-          AlchemyIngredient ingredient = new AlchemyIngredient(i, substances);
+          TWEditor.AlchemyIngredient ingredient = new TWEditor.AlchemyIngredient(i, substances);
           this.ingredients.add(ingredient);
           this.ingredientsMap.put(new Integer(ingredient.getID()), ingredient);
         }
@@ -403,12 +403,12 @@ public class InventoryPanel extends JPanel
     }
 
     if (!this.availDone) {
-      for (ItemTemplate itemTemplate : Main.itemTemplates) {
+      for (TWEditor.ItemTemplate itemTemplate : TWEditor.Main.itemTemplates) {
         int baseItem = itemTemplate.getBaseItem();
         for (int i = 0; i < categoryMappings.length; i++) {
           if (categoryMappings[i][0] == baseItem) {
-            CategoryNode categoryNode = this.categoryNodes[categoryMappings[i][1]];
-            InventoryNode inventoryNode = new InventoryNode(itemTemplate);
+            TWEditor.CategoryNode categoryNode = this.categoryNodes[categoryMappings[i][1]];
+            TWEditor.InventoryNode inventoryNode = new TWEditor.InventoryNode(itemTemplate);
             categoryNode.insert(inventoryNode);
             break;
           }
@@ -419,9 +419,9 @@ public class InventoryPanel extends JPanel
       this.availDone = true;
     }
 
-    DBElement element = list.getElement("ItemList");
+    TWEditor.DBElement element = list.getElement("ItemList");
     if ((element != null) && (element.getType() == 15)) {
-      itemList = (DBList)element.getValue();
+      itemList = (TWEditor.DBList)element.getValue();
       itemCount = itemList.getElementCount();
     }
 
@@ -438,14 +438,14 @@ public class InventoryPanel extends JPanel
     }
 
     for (int i = 0; i < itemCount; i++) {
-      DBElement itemElement = itemList.getElement(i);
-      DBList itemFields = (DBList)itemElement.getValue();
+      TWEditor.DBElement itemElement = itemList.getElement(i);
+      TWEditor.DBList itemFields = (TWEditor.DBList)itemElement.getValue();
       String itemName = itemFields.getString("LocalizedName");
       if (itemName.length() > 0) {
         int questItem = itemFields.getInteger("QuestItem");
         int x = itemFields.getInteger("Repos_PosX");
         int y = itemFields.getInteger("Repos_PosY");
-        InventoryItem item = new InventoryItem(itemName, itemElement);
+        TWEditor.InventoryItem item = new TWEditor.InventoryItem(itemName, itemElement);
         insertItem(this.itemsModel, item);
         if ((questItem == 0) && (x >= 0) && (x < 14) && (y >= 0) && (y < 6)) {
           this.slots[y][x] = true;
@@ -461,17 +461,17 @@ public class InventoryPanel extends JPanel
       this.itemsField.ensureIndexIsVisible(0);
   }
 
-  public void getFields(DBList list)
-    throws DBException
+  public void getFields(TWEditor.DBList list)
+    throws TWEditor.DBException
   {
   }
 
-  private boolean insertItem(DefaultListModel itemModel, InventoryItem item)
+  private boolean insertItem(DefaultListModel itemModel, TWEditor.InventoryItem item)
   {
     int listSize = itemModel.getSize();
     boolean inserted = false;
     for (int j = 0; j < listSize; j++) {
-      InventoryItem listItem = (InventoryItem)itemModel.getElementAt(j);
+      TWEditor.InventoryItem listItem = (TWEditor.InventoryItem)itemModel.getElementAt(j);
       int diff = item.compareTo(listItem);
       if (diff < 0) {
         itemModel.insertElementAt(item, j);
